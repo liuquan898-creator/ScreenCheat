@@ -21,9 +21,6 @@ internal sealed class Settings
     /// <summary>Turn protection on as soon as the app starts (overridden by --on / --off).</summary>
     public bool EnableOnStart { get; set; } = true;
 
-    /// <summary>Draw the frame and badge that only the user can see while protection is on.</summary>
-    public bool ShowIndicator { get; set; } = true;
-
     /// <summary>Show the hacker desktop pet while protection is on.</summary>
     public bool ShowPet { get; set; } = true;
 

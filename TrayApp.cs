@@ -92,15 +92,11 @@ internal sealed partial class TrayApp : ApplicationContext
 
     private void Enable()
     {
-        string? indicator = null;
-        if (_settings.ShowIndicator)
-            indicator = _hotkeyRegistered ? $"防录屏已开启 · {_hotkey} 关闭" : "防录屏已开启";
-
         // Pet first, so the overlays created next sit above it.
         ShowOrHidePet();
         try
         {
-            _overlays.Show(SelectedScreens().Select(screen => screen.Bounds).ToList(), indicator, _useAffinity);
+            _overlays.Show(SelectedScreens().Select(screen => screen.Bounds).ToList(), _useAffinity);
         }
         catch (Win32Exception e)
         {
@@ -211,15 +207,6 @@ internal sealed partial class TrayApp : ApplicationContext
         }
         _menu.Items.Add(range);
 
-        _menu.Items.Add(new ToolStripMenuItem("显示状态提示（只有自己能看到）", null, (_, _) =>
-        {
-            _settings.ShowIndicator = !_settings.ShowIndicator;
-            _settings.Save();
-            RefreshOverlays();
-        })
-        {
-            Checked = _settings.ShowIndicator,
-        });
         _menu.Items.Add(new ToolStripMenuItem("显示桌面宠物", null, (_, _) =>
         {
             _settings.ShowPet = !_settings.ShowPet;
@@ -290,7 +277,7 @@ internal sealed partial class TrayApp : ApplicationContext
         {
             MessageBox.Show($"热键 {_hotkey} 已被其他程序占用，请换一个。", AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-        RefreshOverlays();
+        UpdateTray(); // the tooltip shows the hotkey
     }
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)

@@ -46,13 +46,13 @@ internal sealed class OverlayManager : IDisposable
     public IntPtr Companion { get; set; }
 
     /// <summary>Replaces the current overlays with one per area. Throws if the system refuses.</summary>
-    public void Show(IReadOnlyList<Rectangle> areas, string? indicatorText, bool useAffinity)
+    public void Show(IReadOnlyList<Rectangle> areas, bool useAffinity)
     {
         Hide();
         try
         {
             foreach (Rectangle area in areas)
-                _overlays.Add(new OverlayWindow(area, indicatorText, useAffinity));
+                _overlays.Add(new OverlayWindow(area, useAffinity));
         }
         catch
         {

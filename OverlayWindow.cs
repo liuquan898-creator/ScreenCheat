@@ -18,19 +18,15 @@ internal sealed class OverlayWindow : NativeWindow, IDisposable
     // Black is the colour key: the window surface starts out black, so the overlay
     // is see-through from its very first frame, before WM_PAINT has run.
     private static readonly Color KeyColor = Color.Black;
-    private static readonly Color IndicatorColor = Color.FromArgb(229, 72, 77);
 
     private readonly Size _size;
-    private readonly string? _indicatorText;
 
     /// <param name="bounds">Monitor bounds in physical pixels.</param>
-    /// <param name="indicatorText">Badge text only the user can see; null draws nothing.</param>
     /// <param name="useAffinity">False only in tests that check the overlay is see-through.</param>
-    public OverlayWindow(Rectangle bounds, string? indicatorText, bool useAffinity)
+    public OverlayWindow(Rectangle bounds, bool useAffinity)
     {
         Bounds = bounds;
         _size = bounds.Size;
-        _indicatorText = indicatorText;
 
         CreateHandle(new CreateParams
         {
@@ -98,34 +94,10 @@ internal sealed class OverlayWindow : NativeWindow, IDisposable
             using Graphics g = Graphics.FromHdc(hdc);
             using var key = new SolidBrush(KeyColor);
             g.FillRectangle(key, 0, 0, _size.Width, _size.Height);
-            if (_indicatorText is not null)
-                DrawIndicator(g, _indicatorText);
         }
         finally
         {
             EndPaint(Handle, ref paint);
         }
-    }
-
-    /// <summary>A thin frame plus a badge at the top centre, both visible to the user only.</summary>
-    private void DrawIndicator(Graphics g, string text)
-    {
-        float scale = GetDpiForWindow(Handle) / 96f;
-        int width = _size.Width, height = _size.Height;
-        int frame = Math.Max(2, (int)Math.Round(3 * scale));
-
-        using var brush = new SolidBrush(IndicatorColor);
-        g.FillRectangle(brush, 0, 0, width, frame);
-        g.FillRectangle(brush, 0, height - frame, width, frame);
-        g.FillRectangle(brush, 0, 0, frame, height);
-        g.FillRectangle(brush, width - frame, 0, frame, height);
-
-        const TextFormatFlags Flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
-        using var font = new Font("Microsoft YaHei UI", 13f * scale, FontStyle.Bold, GraphicsUnit.Pixel);
-        Size textSize = TextRenderer.MeasureText(g, text, font, Size.Empty, Flags);
-        int padX = (int)Math.Round(12 * scale), padY = (int)Math.Round(4 * scale);
-        var badge = new Rectangle((width - textSize.Width) / 2 - padX, 0, textSize.Width + 2 * padX, textSize.Height + 2 * padY);
-        g.FillRectangle(brush, badge);
-        TextRenderer.DrawText(g, text, font, new Point(badge.X + padX, badge.Y + padY), Color.White, IndicatorColor, Flags);
     }
 }
