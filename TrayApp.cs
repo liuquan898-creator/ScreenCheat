@@ -44,6 +44,7 @@ internal sealed partial class TrayApp : ApplicationContext
         };
 
         _hotkeyWindow.Pressed += Toggle;
+        _hotkeyWindow.CommandReceived = HandleCommand;
         _hotkeyRegistered = _hotkeyWindow.Register(_hotkey);
         SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
 
@@ -79,15 +80,35 @@ internal sealed partial class TrayApp : ApplicationContext
     private void Toggle()
     {
         if (_overlays.Active)
-        {
-            _overlays.Hide();
-            HidePet();
-        }
+            Disable();
         else
-        {
             Enable();
-        }
         UpdateTray();
+    }
+
+    /// <summary>A command from a second launch (--on / --off / --status). Returns 1 if protection is on, 0 if off.</summary>
+    private int HandleCommand(int command)
+    {
+        if (command == CommandChannel.On && !_overlays.Active)
+            Enable();
+        else if (command == CommandChannel.Off && _overlays.Active)
+            Disable();
+        UpdateTray();
+
+        if (command != CommandChannel.Status)
+        {
+            // Reply only once the change has been composed, so a screenshot taken
+            // the moment the caller returns already sees it.
+            NativeMethods.DwmFlush();
+            NativeMethods.DwmFlush();
+        }
+        return _overlays.Active ? 1 : 0;
+    }
+
+    private void Disable()
+    {
+        _overlays.Hide();
+        HidePet();
     }
 
     private void Enable()

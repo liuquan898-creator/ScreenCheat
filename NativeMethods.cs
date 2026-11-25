@@ -196,6 +196,18 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    public const uint SMTO_ABORTIFHUNG = 0x0002;
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern IntPtr FindWindowExW(IntPtr parent, IntPtr childAfter, string? className, string? windowName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern IntPtr SendMessageTimeoutW(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeoutMs, out IntPtr result);
+
+    /// <summary>Blocks until the compositor has presented the next frame.</summary>
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmFlush();
+
     [DllImport("gdi32.dll")]
     public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
 

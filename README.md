@@ -18,8 +18,21 @@
 
 命令行参数：
 
-- `--on` / `--off`：这次启动时开启或关闭，忽略"启动时自动开启"设置。
+- `--on` / `--off`：
+  - 程序已在运行时：让它开启或关闭，等屏幕上真正生效后才返回，返回后马上截图就是对的。退出码 0 表示成功。
+  - 程序没在运行时：启动它，这次启动时开启或关闭，忽略"启动时自动开启"设置。此时会变成常驻程序，脚本里调用不要等它结束。
+- `--status`：不改任何东西，只用退出码报告状态：1 = 开着，0 = 关着，2 = 没在运行。
 - `--exit`：让正在运行的实例退出。
+
+脚本或 AI 助手需要截屏时，可以先关、截完再开（PowerShell）：
+
+```powershell
+$sc = "$env:LOCALAPPDATA\Programs\ScreenCheat\ScreenCheat.exe"
+$state = (Start-Process $sc '--status' -Wait -PassThru).ExitCode
+if ($state -eq 1) { Start-Process $sc '--off' -Wait }
+# ……截屏……
+if ($state -eq 1) { Start-Process $sc '--on' -Wait }
+```
 
 设置保存在 `%AppData%\ScreenCheat\settings.json`。
 
